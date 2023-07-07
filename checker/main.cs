@@ -4,17 +4,17 @@ class chastity
 {
  static void Main(string[] args)
  {
-  Bitmap image=new Bitmap(720,720);
+  Bitmap image=new Bitmap(1920,1080);
   Console.WriteLine(image.ToString());
   Console.WriteLine("Width="+image.Width);
   Console.WriteLine("Height="+image.Height);
   Graphics g = Graphics.FromImage(image);
 
   Color[] c=new Color[2];
-  c[0]=Color.FromArgb(0,255,0);
-  c[1]=Color.FromArgb(255,0,255);
+  c[0]=Color.FromArgb(0,0,0);
+  c[1]=Color.FromArgb(255,255,255);
 
-  int rectsize=image.Width/20;
+  int rectsize=image.Height/54;
   int index=0,index1;
 
   int y=0;
