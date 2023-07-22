@@ -112,10 +112,22 @@ static void keyboard()
 
  switch(cki.Key)
  {
+  case ConsoleKey.Z:
+   move_id='Z';
+   block_rotate_left_basic();
+  break;
   case ConsoleKey.X:
    move_id='X';
    block_rotate_right_basic();
   break;
+
+    /*the main 4 directions*/
+
+    case ConsoleKey.UpArrow:
+    case ConsoleKey.W:
+     move_id='W';
+     tetris_move_up();
+    break;
 
  case ConsoleKey.DownArrow:
  case ConsoleKey.S:
@@ -123,6 +135,16 @@ static void keyboard()
      tetris_move_down();
     break;
   
+    case ConsoleKey.LeftArrow:
+    case ConsoleKey.A:
+     move_id='A';
+    tetris_move_left();
+    break;
+    case ConsoleKey.RightArrow:
+    case ConsoleKey.D:
+     move_id='D';
+     tetris_move_right();
+    break;
   
  } 
 
@@ -372,6 +394,69 @@ static void tetris_move_down()
 }
 
 
+/*all things about moving up*/
+static void tetris_move_up()
+{
+
+ /*make backup of block location*/
+ temp_block.x=main_block.x;
+ temp_block.y=main_block.y;
+
+ main_block.y-=1;
+ last_move_fail=tetris_check_move();
+ if(last_move_fail==0)
+ {
+  last_move_spin=0;
+ }
+ else
+ {
+  /*restore backup of block location*/
+  main_block.x=temp_block.x;
+  main_block.y=temp_block.y;
+ }
+}
+
+
+/*all things about moving right*/
+static void tetris_move_right()
+{
+ /*make backup of block location*/
+ temp_block.x=main_block.x;
+ temp_block.y=main_block.y;
+ main_block.x+=1;
+ last_move_fail=tetris_check_move();
+ if(last_move_fail==0)
+ {
+  last_move_spin=0;
+ }
+ else
+ {
+  /*restore backup of block location*/
+  main_block.x=temp_block.x;
+  main_block.y=temp_block.y;
+ }
+}
+
+/*all things about moving left*/
+static void tetris_move_left()
+{
+ /*make backup of block location*/
+ temp_block.x=main_block.x;
+ temp_block.y=main_block.y;
+ main_block.x-=1;
+ last_move_fail=tetris_check_move();
+ if(last_move_fail==0)
+ {
+  last_move_spin=0;
+ }
+ else
+ {
+  /*restore backup of block location*/
+  main_block.x=temp_block.x;
+  main_block.y=temp_block.y;
+ }
+}
+
 
 
 static int pixel_on_grid(int x,int y)
@@ -403,7 +488,7 @@ static int tetris_check_move()
    {
     if( pixel_on_grid(main_block.x+x,main_block.y+y)!=0 )
     {
-     /*Console.WriteLine("Error: Block in Way on Move Check.\n");*/
+     //Console.WriteLine("Error: Block in Way on Move Check.\n");
      return 1; /*return failure*/
     }
    }
@@ -475,6 +560,10 @@ static void block_rotate_right_basic()
   y+=1;
  }
 
+ /*make backup of block location*/
+ temp_block.x=main_block.x;
+ temp_block.y=main_block.y;
+
  /*copy it from top to bottom to right to left(my own genius rotation trick)*/
  /*same as in the left rotation function but x,y and x1,y1 are swapped in the assignment*/
 
@@ -512,11 +601,15 @@ static void block_rotate_right_basic()
    x=0;
    while(x<max_block_width)
    {
-    temp_block.array[x+y*max_block_width]=main_block.array[x+y*max_block_width];
+    main_block.array[x+y*max_block_width]=temp_block.array[x+y*max_block_width];
     x+=1;
    }
    y+=1;
   }
+
+  /*restore backup of block location*/
+  main_block.x=temp_block.x;
+  main_block.y=temp_block.y;
 
  }
  else
@@ -526,6 +619,126 @@ static void block_rotate_right_basic()
  }
 
 }
+
+
+
+
+
+/*
+fancy left rotation system for T blocks only
+does not actually rotate. Rather tries to move a T block into another valid spot and simulate SRS rules
+*/
+static void block_rotate_left_fancy_t()
+{
+ int x=0,y=0;
+
+ if(main_block.id!='T')
+ {
+  Console.WriteLine("Block is not T. No action will be taken.");return;
+ }
+ 
+ x=main_block.x;
+ y=main_block.y;
+
+
+ main_block.x=x+1;
+ main_block.y=y+1;
+ last_move_fail=tetris_check_move();
+ if(last_move_fail!=0)
+ {
+  /*printf("First fancy T Block spin attempt failed.");*/
+  
+  main_block.x=x+1;
+  main_block.y=y+2;
+  last_move_fail=tetris_check_move();
+  if(last_move_fail!=0)
+  {
+   /*printf("Second fancy T Block spin attempt failed.");*/
+  }
+
+ }
+
+}
+
+
+/*basic (non SRS) rotation system*/
+static void block_rotate_left_basic()
+{
+ int x=0,y=0,x1=0,y1=0;
+
+ /*backup the block*/
+ y=0;
+ while(y<max_block_width)
+ {
+  x=0;
+  while(x<max_block_width)
+  {
+   temp_block.array[x+y*max_block_width]=main_block.array[x+y*max_block_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
+ /*make backup of block location*/
+ temp_block.x=main_block.x;
+ temp_block.y=main_block.y;
+
+ /*copy it from top to bottom to right to left(my own genius rotation trick)*/
+/*same as in the right rotation function but x,y and x1,y1 are swapped in the assignment*/
+
+ x1=main_block.width_used;
+ y=0;
+ while(y<main_block.width_used)
+ {
+  x1--;
+  y1=0;
+  x=0;
+  while(x<main_block.width_used)
+  {
+   main_block.array[x+y*max_block_width]=temp_block.array[x1+y1*max_block_width];
+   x+=1;
+   y1++;
+  }
+  y+=1;
+ }
+
+ /*if rotation caused collision, restore to the backup before rotate.*/
+ last_move_fail=tetris_check_move();
+ if(last_move_fail!=0)
+ {
+  /*if basic rotation failed, try fancier*/
+  block_rotate_left_fancy_t();
+ }
+ if(last_move_fail!=0)
+ {
+  /*if it still failed, revert block to before rotation*/
+
+  /*restore the block*/
+  y=0;
+  while(y<max_block_width)
+  {
+   x=0;
+   while(x<max_block_width)
+   {
+    main_block.array[x+y*max_block_width]=temp_block.array[x+y*max_block_width];
+    x+=1;
+   }
+   y+=1;
+  }
+
+  /*restore backup of block location*/
+  main_block.x=temp_block.x;
+  main_block.y=temp_block.y;
+ }
+ else
+ {
+  last_move_spin=1;
+ }
+
+}
+
+
+
 
 
 
