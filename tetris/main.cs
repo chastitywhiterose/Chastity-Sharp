@@ -192,22 +192,36 @@ static void load_gamesave()
  //main_block=state[save_index].main_block;
  //hold_block=state[save_index].hold_block;
 
+ /*restore the main and hold block arrays from the save state*/
+ y=0;
+ while(y<max_block_width)
+ {
+  x=0;
+  while(x<max_block_width)
+  {
+   main_block.array[x+y*max_block_width]=state[save_index].main_block.array[x+y*max_block_width];
+   hold_block.array[x+y*max_block_width]=state[save_index].hold_block.array[x+y*max_block_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
 
 main_block.color=state[save_index].main_block.color;
 main_block.x=state[save_index].main_block.x;
 main_block.y=state[save_index].main_block.y;
-state[save_index].main_block.spawn_x=main_block.spawn_x;
-state[save_index].main_block.spawn_y=main_block.spawn_y;
-state[save_index].main_block.width_used=main_block.width_used;
-state[save_index].main_block.id=main_block.id;
+main_block.spawn_x=state[save_index].main_block.spawn_x;
+main_block.spawn_y=state[save_index].main_block.spawn_y;
+main_block.width_used=state[save_index].main_block.width_used;
+main_block.id=state[save_index].main_block.id;
 
-state[save_index].hold_block.color=hold_block.color;
-state[save_index].hold_block.x=hold_block.x;
-state[save_index].hold_block.y=hold_block.y;
-state[save_index].hold_block.spawn_x=hold_block.spawn_x;
-state[save_index].hold_block.spawn_y=hold_block.spawn_y;
-state[save_index].hold_block.width_used=hold_block.width_used;
-state[save_index].hold_block.id=hold_block.id;
+hold_block.color=state[save_index].hold_block.color;
+hold_block.x=state[save_index].hold_block.x;
+hold_block.y=state[save_index].hold_block.y;
+hold_block.spawn_x=state[save_index].hold_block.spawn_x;
+hold_block.spawn_y=state[save_index].hold_block.spawn_y;
+hold_block.width_used=state[save_index].hold_block.width_used;
+hold_block.id=state[save_index].hold_block.id;
 
 
 
