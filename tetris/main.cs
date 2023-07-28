@@ -9,7 +9,7 @@ struct tetris_grid
  public int[] array;
 };
 
-
+/*a structure for all data of a single block*/
 struct tetris_block
 {
  public int[] array;
@@ -18,6 +18,22 @@ struct tetris_block
  public int x,y; /*current location of block*/
  public int width_used; /*width of block actually used*/
  public int id;
+};
+
+
+/*a big structure to hold all relevant data that should be saved or loaded*/
+struct gamesave
+{
+ public int exist;
+ public int block_type;
+ public int moves;
+ public int hold_exist;
+ public int score;
+ public int lines;
+ public int btb;
+ //public int logpos;
+ public tetris_block main_block,hold_block; /* to save the main and hold blocks */
+ public tetris_grid grid;
 };
 
 
@@ -46,6 +62,9 @@ static tetris_grid main_grid,temp_grid;
 public static int max_block_width=4;
 public static tetris_block main_block,hold_block,temp_block;
 
+public static gamesave[] state;
+static int save_index=0;
+
 /*a function to initialize the static variables for the tetris game*/
 static void init()
 {
@@ -66,7 +85,145 @@ static void init()
 
  //Console.WriteLine("grid_width="+grid_width+" grid_height="+grid_height);
 
+spawn_block(); //spawn the first block before beginning game loop
+
+state=new gamesave[1]; //make array of only one save object
+
+state[save_index].grid.array=new int[200];
+state[save_index].main_block.array=new int[16];
+state[save_index].hold_block.array=new int[16];
+
+
+save_gamesave(); //save the game at the very beginning
+
 }
+
+
+/*
+ a special function which saves all the important data in the game. This allows reloading to a previous position when I make a mistake.
+*/
+static void save_gamesave()
+{
+ int x,y;
+ 
+ /*make backup of entire grid*/
+ y=0;
+ while(y<grid_height)
+ {
+  x=0;
+  while(x<grid_width)
+  {
+   state[save_index].grid.array[x+y*grid_width]=main_grid.array[x+y*grid_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
+ /*backup the main and hold block arrays to the save state*/
+ y=0;
+ while(y<max_block_width)
+ {
+  x=0;
+  while(x<max_block_width)
+  {
+   state[save_index].main_block.array[x+y*max_block_width]=main_block.array[x+y*max_block_width];
+   state[save_index].hold_block.array[x+y*max_block_width]=hold_block.array[x+y*max_block_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
+state[save_index].main_block.color=main_block.color;
+state[save_index].main_block.x=main_block.x;
+state[save_index].main_block.y=main_block.y;
+state[save_index].main_block.spawn_x=main_block.spawn_x;
+state[save_index].main_block.spawn_y=main_block.spawn_y;
+state[save_index].main_block.width_used=main_block.width_used;
+state[save_index].main_block.id=main_block.id;
+
+state[save_index].hold_block.color=hold_block.color;
+state[save_index].hold_block.x=hold_block.x;
+state[save_index].hold_block.y=hold_block.y;
+state[save_index].hold_block.spawn_x=hold_block.spawn_x;
+state[save_index].hold_block.spawn_y=hold_block.spawn_y;
+state[save_index].hold_block.width_used=hold_block.width_used;
+state[save_index].hold_block.id=hold_block.id;
+
+
+ state[save_index].block_type=block_type;
+
+ state[save_index].moves=moves;
+
+ state[save_index].hold_exist=hold_used;
+ state[save_index].score=score;
+ state[save_index].lines=lines_cleared_total;
+ state[save_index].btb=back_to_back;
+
+ //Console.WriteLine("State %d saved\n",save_index);
+ 
+ state[save_index].exist=1;
+} //end of gamesave function
+
+/*
+ a special function which loads the data previously saved. This allows reloading to a previous position when I make a mistake.
+*/
+static void load_gamesave()
+{
+ int x,y;
+ if(state[save_index].exist==0)
+ {
+  //printf("State %d has not be saved yet! Nothing to load!\n",save_index);
+  return;
+ }
+ 
+ /*restore backup of entire grid*/
+ y=0;
+ while(y<grid_height)
+ {
+  x=0;
+  while(x<grid_width)
+  {
+   main_grid.array[x+y*grid_width]=state[save_index].grid.array[x+y*grid_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
+ //main_block=state[save_index].main_block;
+ //hold_block=state[save_index].hold_block;
+
+
+main_block.color=state[save_index].main_block.color;
+main_block.x=state[save_index].main_block.x;
+main_block.y=state[save_index].main_block.y;
+state[save_index].main_block.spawn_x=main_block.spawn_x;
+state[save_index].main_block.spawn_y=main_block.spawn_y;
+state[save_index].main_block.width_used=main_block.width_used;
+state[save_index].main_block.id=main_block.id;
+
+state[save_index].hold_block.color=hold_block.color;
+state[save_index].hold_block.x=hold_block.x;
+state[save_index].hold_block.y=hold_block.y;
+state[save_index].hold_block.spawn_x=hold_block.spawn_x;
+state[save_index].hold_block.spawn_y=hold_block.spawn_y;
+state[save_index].hold_block.width_used=hold_block.width_used;
+state[save_index].hold_block.id=hold_block.id;
+
+
+
+ block_type=state[save_index].block_type;
+
+ moves=state[save_index].moves;
+
+ hold_used=state[save_index].hold_exist;
+ 
+ score=state[save_index].score;
+ lines_cleared_total=state[save_index].lines;
+ back_to_back=state[save_index].btb;
+
+ //printf("State %d loaded\n",save_index);
+} //end of game load function
+
 
 
 
@@ -79,7 +236,7 @@ static void init()
 
   Console.Write("Main Start\n");
 
-  spawn_block(); //spawn the first block before beginning game loop
+
 
   do
   {
@@ -124,6 +281,16 @@ static void keyboard()
   case ConsoleKey.C:
    move_id='C';
    block_hold();
+  break;
+
+  case ConsoleKey.I:
+   move_id='I';
+   save_gamesave();
+  break;
+
+  case ConsoleKey.P:
+   move_id='P';
+   load_gamesave();
   break;
 
     /*the main 4 directions*/
