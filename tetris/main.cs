@@ -37,6 +37,7 @@ static int empty_color=0x000000;
 static int back_to_back=0;
 static int score=0;
 static int combo=0;
+static int hold_used=0;
 
 static int grid_width=10,grid_height=20;
 
@@ -120,6 +121,10 @@ static void keyboard()
    move_id='X';
    block_rotate_right_basic();
   break;
+  case ConsoleKey.C:
+   move_id='C';
+   block_hold();
+  break;
 
     /*the main 4 directions*/
 
@@ -150,6 +155,91 @@ static void keyboard()
 
 
 }
+
+
+static void block_hold()
+{
+ int x,y;
+
+ if(hold_used==0) /*just store block if nothing there*/
+ {
+  /*printf("hold block used first time.\n");*/
+  //hold_block=main_block;
+
+ /*backup the main block to the hold block*/
+ y=0;
+ while(y<max_block_width)
+ {
+  x=0;
+  while(x<max_block_width)
+  {
+   hold_block.array[x+y*max_block_width]=main_block.array[x+y*max_block_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
+hold_block.color=main_block.color;
+hold_block.spawn_x=main_block.spawn_x;
+hold_block.spawn_y=main_block.spawn_y;
+hold_block.width_used=main_block.width_used;
+hold_block.id=main_block.id;
+//end of copying main to hold
+
+
+  tetris_next_block();
+  spawn_block();
+  hold_used=1;
+ }
+ else
+ {
+  /*printf("Swap with previous hold block.\n");*/
+ // temp_block=hold_block;
+  //hold_block=main_block;
+  //main_block=temp_block;
+
+ /*backup the main block to the hold block*/
+ y=0;
+ while(y<max_block_width)
+ {
+  x=0;
+  while(x<max_block_width)
+  {
+   temp_block.array[x+y*max_block_width]=hold_block.array[x+y*max_block_width];
+   hold_block.array[x+y*max_block_width]=main_block.array[x+y*max_block_width];
+   main_block.array[x+y*max_block_width]=temp_block.array[x+y*max_block_width];
+   x+=1;
+  }
+  y+=1;
+ }
+
+  temp_block.color=hold_block.color;
+  temp_block.spawn_x=hold_block.spawn_x;
+  temp_block.spawn_y=hold_block.spawn_y;
+  temp_block.width_used=hold_block.width_used;
+  temp_block.id=hold_block.id;
+
+
+  hold_block.color=main_block.color;
+  hold_block.spawn_x=main_block.spawn_x;
+  hold_block.spawn_y=main_block.spawn_y;
+  hold_block.width_used=main_block.width_used;
+  hold_block.id=main_block.id;
+
+  main_block.color=temp_block.color;
+  main_block.spawn_x=temp_block.spawn_x;
+  main_block.spawn_y=temp_block.spawn_y;
+  main_block.width_used=temp_block.width_used;
+  main_block.id=temp_block.id;
+
+
+  main_block.x=main_block.spawn_x;
+  main_block.y=main_block.spawn_y;
+ }
+ move_log[moves]=(byte)move_id; /*hold block is always valid move*/
+ moves=moves+1;
+}
+
 
 
 /*this next section has the functions which move and test the block*/
@@ -963,8 +1053,4 @@ static void spawn_block()
 
 }
 
-/*
-this example is only slightly modified from here:
-https://learn.microsoft.com/en-us/dotnet/api/system.console.readkey?view=netcore-2.0
-*/
 
