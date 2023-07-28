@@ -1066,9 +1066,12 @@ static void tetris_print()
 {
  int x,y;
  int v;
+ int orig_x=28;
  y=0;
  while(y<grid_height)
  {
+  Console.SetCursorPosition(orig_x,y);
+  Console.ForegroundColor=ConsoleColor.White;
   Console.Write("[");
   x=0;
   while(x<grid_width)
@@ -1077,11 +1080,19 @@ static void tetris_print()
    if(v==0){Console.Write(" ");}
    else
    {
+    if(v=='I'){Console.ForegroundColor=ConsoleColor.Cyan;}
+    if(v=='T'){Console.ForegroundColor=ConsoleColor.Magenta;}
+    if(v=='Z'){Console.ForegroundColor=ConsoleColor.DarkRed;}
+    if(v=='J'){Console.ForegroundColor=ConsoleColor.Blue;}
+    if(v=='O'){Console.ForegroundColor=ConsoleColor.Yellow;}
+    if(v=='L'){Console.ForegroundColor=ConsoleColor.Red;}
+    if(v=='S'){Console.ForegroundColor=ConsoleColor.Green;}
     Console.Write((char)v);
    }
    Console.Write(" ");
    x+=1;
   }
+  Console.ForegroundColor=ConsoleColor.White;
   Console.WriteLine("]");
   y+=1;
  }
